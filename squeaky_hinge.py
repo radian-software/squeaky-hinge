@@ -9,33 +9,60 @@ import websocket
 
 from squeaky_hinge_secrets import *
 
-sendbird_application_id = "3CDAD91C-1E0D-4A0D-BBEE-9671988BF9E9"
 hinge_app_version = "9.2.1"
 hinge_device_platform = "android"
+hinge_android_package = "co.hinge.app"
+hinge_apk_sha1sum = "7D5F1D2ACE98A03B2C3A1A6B0DCB2B7F5D856F67"
+
 system_user_agent = "Jand/3.1.12"
+sendbird_application_id = "3CDAD91C-1E0D-4A0D-BBEE-9671988BF9E9"
 sendbird_user_agent = "Android/c3.1.12"
 sendbird_device_info = f"Android, 32, 3.1.12, {sendbird_application_id}"
 
-# resp = requests.post(
-#     "https://prod-api.hingeaws.net/auth/sms",
-#     headers={
-#         "X-App-Version": hinge_app_version,
-#         "X-Device-Platform": hinge_device_platform,
-#     },
-#     json={
-#         "installId": hinge_install_id,
-#         "token": sms_jwt,
-#     },
-# )
+resp = requests.post(
+    "https://securetoken.googleapis.com/v1/token",
+    headers={
+        "X-Android-Package": hinge_android_package,
+        "X-Android-Cert": hinge_apk_sha1sum,
+    },
+    json={
+        "grant_type": "refresh_token",
+        "refresh_token": google_refresh_token,
+    },
+    params={
+        "alt": "json",
+        "key": google_token,
+    },
+)
 
-# if not resp.ok:
-#     raise Exception(
-#         f"got response code {resp.status_code} when fetching Hinge API token"
-#     )
+if not resp.ok:
+    raise Exception(
+        f"got response code {resp.status_code} when fetching Google SMS JWT"
+    )
 
-# hinge_token_data = resp.json()
-# hinge_token = hinge_token_data["token"]
-# user_id = hinge_token_data["identityId"]
+sms_jwt_data = resp.json()
+sms_jwt = sms_jwt_data["access_token"]
+
+resp = requests.post(
+    "https://prod-api.hingeaws.net/auth/sms",
+    headers={
+        "X-App-Version": hinge_app_version,
+        "X-Device-Platform": hinge_device_platform,
+    },
+    json={
+        "installId": hinge_install_id,
+        "token": sms_jwt,
+    },
+)
+
+if not resp.ok:
+    raise Exception(
+        f"got response code {resp.status_code} when fetching Hinge API token"
+    )
+
+hinge_token_data = resp.json()
+hinge_token = hinge_token_data["token"]
+user_id = hinge_token_data["identityId"]
 
 resp = requests.post(
     "https://prod-api.hingeaws.net/message/authenticate",
