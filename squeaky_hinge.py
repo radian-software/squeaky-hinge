@@ -1,35 +1,58 @@
 #!/usr/bin/env python3
 
 import datetime
+import json
+import urllib.parse
 
 import requests
+import websocket
 
 from squeaky_hinge_secrets import *
 
+sendbird_application_id = "3CDAD91C-1E0D-4A0D-BBEE-9671988BF9E9"
 hinge_app_version = "9.2.1"
 hinge_device_platform = "android"
 system_user_agent = "Jand/3.1.12"
 sendbird_user_agent = "Android/c3.1.12"
-sendbird_device_info = f"Android, 32, 3.1.12, {sendbird_device_id}"
+sendbird_device_info = f"Android, 32, 3.1.12, {sendbird_application_id}"
 
-resp = requests.get(
-    "https://prod-api.hingeaws.net/user/v2",
-    headers={
-        "Authorization": f"Bearer {hinge_token}",
-        "X-App-Version": hinge_app_version,
-        "X-Device-Platform": hinge_device_platform,
-        "X-Install-Id": hinge_install_id,
-    },
+# resp = requests.post(
+#     "https://prod-api.hingeaws.net/auth/sms",
+#     headers={
+#         "X-App-Version": hinge_app_version,
+#         "X-Device-Platform": hinge_device_platform,
+#     },
+#     json={
+#         "installId": hinge_install_id,
+#         "token": sms_jwt,
+#     },
+# )
+
+# if not resp.ok:
+#     raise Exception(
+#         f"got response code {resp.status_code} when fetching Hinge API token"
+#     )
+
+# hinge_token_data = resp.json()
+# hinge_token = hinge_token_data["token"]
+# user_id = hinge_token_data["identityId"]
+
+ws = websocket.create_connection(
+    f"wss://ws-{sendbird_application_id.lower()}.sendbird.com?"
+    + urllib.parse.urlencode(
+        {
+            "ai": sendbird_application_id,
+            "user_id": user_id,
+            "access_token": sendbird_access_token,
+        }
+    ),
 )
 
-if not resp.ok:
-    raise Exception(f"got response code {resp.status_code} when fetching user profile")
-
-user_profile = resp.json()
-user_id = user_profile["identityId"]
+sendbird_ws_data = json.loads(ws.recv().removeprefix("LOGI"))
+sendbird_session_key = sendbird_ws_data["key"]
 
 resp = requests.get(
-    f"https://api-hinge.sendbird.com/v3/users/{user_id}/my_group_channels",
+    f"https://api-{sendbird_application_id.lower()}.sendbird.com/v3/users/{user_id}/my_group_channels",
     headers={
         "Accept": "application/json",
         "User-Agent": system_user_agent,

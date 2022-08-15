@@ -56,10 +56,23 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 secure = ["ipaddress", "certifi", "idna (>=2.0.0)", "cryptography (>=1.3.4)", "pyOpenSSL (>=0.14)"]
 brotli = ["brotlipy (>=0.6.0)", "brotli (>=1.0.9)", "brotlicffi (>=0.8.0)"]
 
+[[package]]
+name = "websocket-client"
+version = "1.3.3"
+description = "WebSocket client for Python with low level API options"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.extras]
+test = ["websockets"]
+optional = ["wsaccel", "python-socks"]
+docs = ["sphinx-rtd-theme (>=0.5)", "Sphinx (>=3.4)"]
+
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "85c733ed2e30b2fa419bcfed233b1bbd86d4dced07ae54f97e4f90d17b1993ad"
+content-hash = "cac8b45351d423b945454b6a2fdef01db2024fe48587c01009753e1492105009"
 
 [metadata.files]
 certifi = []
@@ -70,3 +83,4 @@ idna = [
 ]
 requests = []
 urllib3 = []
+websocket-client = []
