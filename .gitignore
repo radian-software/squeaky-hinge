@@ -1,4 +1,5 @@
 *.pyc
 __pycache__
+hinge.log
 hinge_creds.json
 squeaky_hinge_secrets.py

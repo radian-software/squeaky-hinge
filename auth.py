@@ -96,7 +96,7 @@ def authenticate(phone_number):
         raise Exception(f"got response code {resp.status_code} when verifying SMS code")
 
     sms_verify_info = resp.json()
-    sms_jwt = sms_verify_info["access_token"]
+    sms_jwt = sms_verify_info["idToken"]
     logging.info(f"Got SMS JWT {sms_jwt}")
 
     logging.info(f"Using X-App-Version {hinge_android_package}")
