@@ -1,9 +1,18 @@
 #!/usr/bin/env python3
 
 import argparse
+import logging
 
 import auth
 import conversations
+
+
+logging.basicConfig(
+    filename="hinge.log",
+    encoding="utf-8",
+    level=logging.DEBUG,
+    format="%(asctime)s %(message)s",
+)
 
 
 def do_login(args):
