@@ -20,14 +20,14 @@ sendbird_user_agent = "Android/c3.1.12"
 sendbird_device_info = f"Android, 32, 3.1.12, {sendbird_application_id}"
 
 resp = requests.post(
-    "https://securetoken.googleapis.com/v1/token",
+    "https://www.googleapis.com/identitytoolkit/v3/relyingparty/sendVerificationCode",
     headers={
         "X-Android-Package": hinge_android_package,
         "X-Android-Cert": hinge_apk_sha1sum,
+        "X-Goog-Spatula": spatula,
     },
     json={
-        "grant_type": "refresh_token",
-        "refresh_token": google_refresh_token,
+        "phone_number": phone_number,
     },
     params={
         "alt": "json",
@@ -36,12 +36,32 @@ resp = requests.post(
 )
 
 if not resp.ok:
-    raise Exception(
-        f"got response code {resp.status_code} when fetching Google SMS JWT"
-    )
+    raise Exception(f"got response code {resp.status_code} when sending SMS code")
 
-sms_jwt_data = resp.json()
-sms_jwt = sms_jwt_data["access_token"]
+sms_send_info = resp.json()
+session_info = sms_send_info["sessionInfo"]
+
+resp = requests.post(
+    "https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPhoneNumber",
+    headers={
+        "X-Android-Package": hinge_android_package,
+        "X-Android-Cert": hinge_apk_sha1sum,
+    },
+    json={
+        "sessionInfo": session_info,
+        "code": input(f"SMS code from {phone_number}: "),
+    },
+    params={
+        "alt": "json",
+        "key": google_token,
+    },
+)
+
+if not resp.ok:
+    raise Exception(f"got response code {resp.status_code} when verifying SMS code")
+
+sms_verify_info = resp.json()
+sms_jwt = sms_verify_info["access_token"]
 
 resp = requests.post(
     "https://prod-api.hingeaws.net/auth/sms",
