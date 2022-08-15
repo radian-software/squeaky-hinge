@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import datetime
 import json
 import urllib.parse
 
@@ -27,7 +26,7 @@ resp = requests.get(
     },
     params={
         "alt": "json",
-        "key": google_token,
+        "key": firebase_web_api_key,
     },
 )
 
@@ -54,7 +53,7 @@ resp = requests.post(
     },
     params={
         "alt": "json",
-        "key": google_token,
+        "key": firebase_web_api_key,
     },
 )
 
@@ -76,7 +75,7 @@ resp = requests.post(
     },
     params={
         "alt": "json",
-        "key": google_token,
+        "key": firebase_web_api_key,
     },
 )
 
@@ -106,6 +105,10 @@ if not resp.ok:
 hinge_token_data = resp.json()
 hinge_token = hinge_token_data["token"]
 user_id = hinge_token_data["identityId"]
+
+with open("hinge-creds.json", "w") as f:
+    json.dump({"hinge_token": hinge_token, "user_id": user_id}, f, indent=2)
+    f.write("\n")
 
 resp = requests.post(
     "https://prod-api.hingeaws.net/message/authenticate",
