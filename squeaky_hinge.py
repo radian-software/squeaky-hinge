@@ -37,6 +37,25 @@ sendbird_device_info = f"Android, 32, 3.1.12, {sendbird_application_id}"
 # hinge_token = hinge_token_data["token"]
 # user_id = hinge_token_data["identityId"]
 
+resp = requests.post(
+    "https://prod-api.hingeaws.net/message/authenticate",
+    headers={
+        "Authorization": f"Bearer {hinge_token}",
+        "X-App-Version": hinge_app_version,
+        "X-Device-Platform": hinge_device_platform,
+        "X-Install-Id": hinge_install_id,
+    },
+    json={"refresh": False},
+)
+
+if not resp.ok:
+    raise Exception(
+        f"got response code {resp.status_code} when fetching Sendbird access token"
+    )
+
+sendbird_auth_data = resp.json()
+sendbird_access_token = sendbird_auth_data["token"]
+
 ws = websocket.create_connection(
     f"wss://ws-{sendbird_application_id.lower()}.sendbird.com?"
     + urllib.parse.urlencode(
