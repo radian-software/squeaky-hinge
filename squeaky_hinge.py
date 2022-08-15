@@ -8,6 +8,7 @@ import requests
 import websocket
 
 from squeaky_hinge_secrets import *
+import recaptcha
 
 hinge_app_version = "9.2.1"
 hinge_device_platform = "android"
@@ -19,15 +20,39 @@ sendbird_application_id = "3CDAD91C-1E0D-4A0D-BBEE-9671988BF9E9"
 sendbird_user_agent = "Android/c3.1.12"
 sendbird_device_info = f"Android, 32, 3.1.12, {sendbird_application_id}"
 
+
+resp = requests.get(
+    "https://identitytoolkit.googleapis.com/v1/recaptchaParams",
+    headers={
+        "X-Android-Package": hinge_android_package,
+        "X-Android-Cert": hinge_apk_sha1sum,
+    },
+    params={
+        "alt": "json",
+        "key": google_token,
+    },
+)
+
+
+if not resp.ok:
+    raise Exception(
+        f"got response code {resp.status_code} when getting ReCAPTCHA parameters"
+    )
+
+recaptcha_params = resp.json()
+recaptcha_site_key = recaptcha_params["recaptchaSiteKey"]
+recaptcha_token = recaptcha.get_token(recaptcha_site_key)
+
+
 resp = requests.post(
     "https://www.googleapis.com/identitytoolkit/v3/relyingparty/sendVerificationCode",
     headers={
         "X-Android-Package": hinge_android_package,
         "X-Android-Cert": hinge_apk_sha1sum,
-        "X-Goog-Spatula": spatula,
     },
     json={
         "phone_number": phone_number,
+        "recaptcha_token": recaptcha_token,
     },
     params={
         "alt": "json",

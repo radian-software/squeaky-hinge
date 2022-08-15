@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <button
+      class="g-recaptcha"
+      data-sitekey="6LcMZR0UAAAAALgPMcgHwga7gY5p8QMg1Hj-bmUv"
+      data-callback="onSubmit"
+      data-action="submit"
+    >
+      Get Recaptcha
+    </button>
+
+    <script src="https://www.google.com/recaptcha/api.js"></script>
+    <script>
+      document
+        .querySelector(".g-recaptcha")
+        .setAttribute("data-sitekey", window.location.hash.slice(1));
+      function onSubmit(token) {
+        fetch("/token", {
+          method: "POST",
+          body: JSON.stringify({ token }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }).then((resp) => {
+          if (resp.ok) {
+            window.close();
+          }
+        });
+      }
+    </script>
+  </body>
+</html>
