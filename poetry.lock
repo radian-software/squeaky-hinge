@@ -55,6 +55,17 @@ dotenv = ["python-dotenv"]
 async = ["asgiref (>=3.2)"]
 
 [[package]]
+name = "humanize"
+version = "4.3.0"
+description = "Python humanize utilities"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.extras]
+tests = ["freezegun", "pytest", "pytest-cov"]
+
+[[package]]
 name = "idna"
 version = "3.3"
 description = "Internationalized Domain Names in Applications (IDNA)"
@@ -153,7 +164,7 @@ watchdog = ["watchdog"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "8ce32c92f866d075b9a5d5eec119e70ebe9688fb687844490ba7cb6dae67a5e4"
+content-hash = "173ad3626d6674622ccde7dba4585f7544bf4c1eaf294eeaf7f97ba86e5aaed3"
 
 [metadata.files]
 certifi = []
@@ -164,6 +175,7 @@ click = [
 ]
 colorama = []
 flask = []
+humanize = []
 idna = [
     {file = "idna-3.3-py3-none-any.whl", hash = "sha256:84d9dd047ffa80596e0f246e2eab0b391788b0503584e8945f2368256d2735ff"},
     {file = "idna-3.3.tar.gz", hash = "sha256:9d643ff0a55b762d5cdb124b8eaa99c66322e2157b69160bc32796e824360e6d"},

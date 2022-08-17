@@ -5,6 +5,7 @@ import logging
 
 import auth
 import conversations
+import reader
 
 
 logging.basicConfig(
@@ -20,9 +21,13 @@ def do_login(args):
     print("Successfully (re-)authenticated")
 
 
+def do_fetch(args):
+    conversations.fetch_conversations()
+    print("Successfully fetched conversations")
+
+
 def do_inbox(args):
-    inbox = conversations.get_conversations()
-    print([member["nickname"] for member in inbox["channels"][0]["members"]])
+    reader.show_inbox()
 
 
 parser = argparse.ArgumentParser()
@@ -31,6 +36,8 @@ subparsers.required = True
 subparser_login = subparsers.add_parser("login")
 subparser_login.set_defaults(func=do_login)
 subparser_login.add_argument("phone_number", type=str)
+subparser_fetch = subparsers.add_parser("fetch")
+subparser_fetch.set_defaults(func=do_fetch)
 subparser_inbox = subparsers.add_parser("inbox")
 subparser_inbox.set_defaults(func=do_inbox)
 

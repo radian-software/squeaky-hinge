@@ -8,7 +8,7 @@ import websocket
 from squeaky_hinge_config import *
 
 
-def get_conversations():
+def fetch_conversations():
     logging.info(f"START inbox flow")
 
     with open("hinge_creds.json") as f:
@@ -100,5 +100,8 @@ def get_conversations():
 
     conversations = resp.json()
 
+    with open("conversations.json", "w") as f:
+        json.dump(conversations, f, indent=2)
+        f.write("\n")
+
     logging.info(f"SUCCESS inbox flow")
-    return conversations
