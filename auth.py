@@ -17,6 +17,27 @@ def authenticate(phone_number):
     hinge_install_id = str(uuid.uuid4()).lower()
     logging.info(f"Generated new Hinge install ID {hinge_install_id}")
 
+    logging.info(f"Using X-App-Version {hinge_android_package}")
+    logging.info(f"Using X-Device-Platform {hinge_apk_sha1sum}")
+    resp = requests.post(
+        "https://prod-api.hingeaws.net/identity/install",
+        headers={
+            "X-App-Version": hinge_app_version,
+            "X-Device-Platform": hinge_device_platform,
+        },
+        json={
+            "installId": hinge_install_id,
+        },
+    )
+    logging.info(
+        f"Invoked identity/install and got response code {resp.status_code} and body: {resp.text}"
+    )
+
+    if not resp.ok:
+        raise Exception(
+            f"got response code {resp.status_code} when registering Hinge installation ID"
+        )
+
     logging.info(f"Using X-Android-Package {hinge_android_package}")
     logging.info(f"Using X-Android-Cert {hinge_apk_sha1sum}")
     logging.info(f"Using Firebase web API key {firebase_web_api_key}")
@@ -99,8 +120,6 @@ def authenticate(phone_number):
     sms_jwt = sms_verify_info["idToken"]
     logging.info(f"Got SMS JWT {sms_jwt}")
 
-    logging.info(f"Using X-App-Version {hinge_android_package}")
-    logging.info(f"Using X-Device-Platform {hinge_apk_sha1sum}")
     resp = requests.post(
         "https://prod-api.hingeaws.net/auth/sms",
         headers={
