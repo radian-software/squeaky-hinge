@@ -30,6 +30,13 @@ def do_inbox(args):
     reader.show_inbox()
 
 
+def do_notify(args):
+    if args.test:
+        reader.test_notifications(args)
+    else:
+        reader.send_notifications(args)
+
+
 parser = argparse.ArgumentParser()
 subparsers = parser.add_subparsers()
 subparsers.required = True
@@ -40,6 +47,10 @@ subparser_fetch = subparsers.add_parser("fetch")
 subparser_fetch.set_defaults(func=do_fetch)
 subparser_inbox = subparsers.add_parser("inbox")
 subparser_inbox.set_defaults(func=do_inbox)
+subparser_notify = subparsers.add_parser("notify")
+subparser_notify.set_defaults(func=do_notify)
+subparser_notify.add_argument("-n", "--dry-run", action="store_true")
+subparser_notify.add_argument("-t", "--test", action="store_true")
 
 args = parser.parse_args()
 args.func(args)
