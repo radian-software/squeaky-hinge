@@ -21,6 +21,7 @@ up actual reliable notifications for messages.
 - [Usage](#usage)
 - [Configure notifications](#configure-notifications)
 - [Set up automatic running and monitoring](#set-up-automatic-running-and-monitoring)
+- [Troubleshooting](#troubleshooting)
 - [Implementation](#implementation)
 - [Future work](#future-work)
 
@@ -174,6 +175,15 @@ via crontab or systemd timer, to taste. Probably best to do it on your
 laptop / home wifi network, as companies often will block your account
 if you try to access API endpoints from IPs that are known to belong
 to AWS or other cloud providers.
+
+## Troubleshooting
+
+I unfortunately cannot provide support for tools like this since they
+will inevitably break due to reasons outside of my control. However,
+if you want to investigate an issue yourself, the best place to start
+would be to look at the `hinge.log` file that is populated with all
+API requests and responses, and see if you see anything interesting
+there.
 
 ## Implementation
 
