@@ -46,7 +46,7 @@ options:
 
 The subcommands are as follows:
 
-* `login `: Provide your phone number as a positional argument (e.g.
+* `login`: Provide your phone number as a positional argument (e.g.
   `+15555555555`). The CLI will run a local server and pop open your
   browser for you to solve a reCAPTCHA which is then used to get
   Google to send an SMS verification code to your phone number, which
