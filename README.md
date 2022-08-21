@@ -7,11 +7,12 @@ A well-known issue (to me) with the dating app
 push and email notifications on Android. This applies to both direct
 messages as well as new matches. I have already spoken to Hinge's
 support team about this and they declined to provide any information
-about why this might be, or any assurance that it would be fixed. So,
-because I got tired of accidentally ghosting people because I didn't
-see their messages, I took matters into my own hands and
-reverse-engineered the mobile API to set up actual reliable
-notifications for messages.
+about why this might be, or any assurance that it would be fixed (well
+actually, they told me they fixed it and I should just upgrade the
+app, but they didn't actually fix it). So, because I got tired of
+accidentally ghosting people after not seeing their messages, I took
+matters into my own hands and reverse-engineered the mobile API to set
+up actual reliable notifications for messages.
 
 **Table of contents**
 
@@ -20,6 +21,7 @@ notifications for messages.
 - [Usage](#usage)
 - [Configure notifications](#configure-notifications)
 - [Set up automatic running and monitoring](#set-up-automatic-running-and-monitoring)
+- [Implementation](#implementation)
 - [Future work](#future-work)
 
 <!-- tocstop -->
@@ -168,7 +170,10 @@ curl https://hc-ping.com/some-url
 ```
 
 Then you can execute this script in the context of your user account
-via crontab or systemd timer, to taste.
+via crontab or systemd timer, to taste. Probably best to do it on your
+laptop / home wifi network, as companies often will block your account
+if you try to access API endpoints from IPs that are known to belong
+to AWS or other cloud providers.
 
 ## Implementation
 
@@ -178,8 +183,8 @@ install an [mitmproxy](https://mitmproxy.org/) CA in the system trust
 store and inspect the requests and responses made during login and
 messaging flows. Hinge has a relatively simple API, owing especially
 to the fact that they use third-party vendors for both authentication
-(Google Identity Platform) and messaging (SendBird). The flow looks
-like this:
+(Google Identity Platform) and messaging (SendBird). In short, the
+flow looks like this:
 
 * Generate a uuid to represent this installation of Hinge, post it to
   `https://prod-api.hingeaws.net/identity/install`
@@ -187,9 +192,9 @@ like this:
   get a reCAPTCHA config from Google Identity Platform
   ([docs](https://cloud.google.com/identity-platform/docs/reference/rest/v1/TopLevel/getRecaptchaParams))
 * Pop a browser for the user with that reCAPTCHA config to get a
-  reCAPTCHA token, this is needed for verification requests if you
-  cannot provide the `X-Goog-Spatula` header that comes out of
-  proprietary Android code ([more on that
+  reCAPTCHA token representing the solution, this is needed for
+  verification requests if you cannot provide the `X-Goog-Spatula`
+  header that comes out of proprietary Android code ([more on that
   here](https://gist.github.com/Romern/e58e634e4d70b2be5b57d7abdb77f7ef))
 * Exchange user phone number and reCAPTCHA token in the
   [sendVerificationCode
@@ -203,7 +208,9 @@ like this:
   libraries](https://firebase.google.com/docs/auth/android/phone-auth))
   and get a JWT representing the SMS verification
 * Exchange the SMS JWT for a Hinge API key at
-  `https://prod-api.hingeaws.net/auth/sms`
+  `https://prod-api.hingeaws.net/auth/sms` - this, alongside the Hinge
+  install ID and SendBird user ID, is the primary persistent access
+  token that is saved after login
 * Exchange the Hinge API key for a SendBird access token at
   `https://prod-api.hingeaws.net/message/authenticate`
 * Open a websocket connection to the Hinge-specific SendBird API
