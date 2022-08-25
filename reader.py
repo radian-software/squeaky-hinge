@@ -99,7 +99,7 @@ def send_notifications(args):
             notifications.append(
                 {
                     "sender": channel["last_message"]["user"]["nickname"],
-                    "text": channel["last_message"]["text"],
+                    "text": channel["last_message"]["message"],
                     "timestamp": channel["last_message"]["created_at"],
                 }
             )

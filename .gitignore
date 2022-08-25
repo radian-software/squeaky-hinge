@@ -3,5 +3,6 @@ __pycache__
 conversations.json
 hinge.log
 hinge_creds.json
+last_notified_timestamp.json
 squeaky_hinge_notifications.py
 squeaky_hinge_secrets.py
