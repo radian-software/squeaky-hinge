@@ -100,8 +100,47 @@ def fetch_conversations():
 
     conversations = resp.json()
 
+    for channel in conversations['channels']:
+        channel['messages'] = fetch_messages(sendbird_session_key, channel)
+
     with open("conversations.json", "w") as f:
         json.dump(conversations, f, indent=2)
         f.write("\n")
 
     logging.info(f"SUCCESS inbox flow")
+
+
+def fetch_messages(sendbird_session_key, channel):
+    logging.info(f"START message flow {channel['channel_url']}")
+
+    messages = []
+    last_message_time = channel['invited_at']
+
+    while last_message_time < channel['last_message']['created_at']:
+        resp = requests.get(
+            f"https://api-{sendbird_application_id.lower()}.sendbird.com/v3/group_channels/{channel['channel_url']}/messages",
+            headers={
+                "Accept": "application/json",
+                "Session-Key": sendbird_session_key,
+            },
+            params={
+                "message_ts": last_message_time,
+                "next_limit": 200,
+            },
+        )
+        logging.info(f"Invoked group_channels and got response code {resp.status_code}")
+
+        if not resp.ok:
+            logging.info(
+                f"Invoked group_channels and got response code {resp.status_code} and body: {resp.text}"
+            )
+            raise Exception(
+                f"got response code {resp.status_code} when fetching messages"
+            )
+
+        parsed = resp.json()
+        messages += parsed['messages']
+        last_message_time = messages[-1]['created_at']
+
+    logging.info(f"SUCCESS message flow {channel['channel_url']}")
+    return messages
