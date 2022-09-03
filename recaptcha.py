@@ -3,10 +3,8 @@ import webbrowser
 
 import flask
 
-
-def get_token(site_key):
+def run_app(q):
     app = flask.Flask(__name__)
-    q = multiprocessing.Queue(maxsize=1)
 
     @app.route("/")
     def route_index():
@@ -21,8 +19,14 @@ def get_token(site_key):
     _ = route_index
     _ = route_token
 
+    app.run(host="127.0.0.1", port=8888)
+
+
+def get_token(site_key):
+    q = multiprocessing.Queue(maxsize=1)
+
     server = multiprocessing.Process(
-        target=lambda: app.run(host="127.0.0.1", port=8888), daemon=True
+        target=run_app(q), daemon=True
     )
     server.start()
     webbrowser.open(f"http://localhost:8888#{site_key}")

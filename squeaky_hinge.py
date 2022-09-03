@@ -22,8 +22,13 @@ def do_login(args):
 
 
 def do_fetch(args):
-    conversations.fetch_conversations()
+    conversations.fetch_conversations(include_messages=False)
     print("Successfully fetched conversations")
+
+
+def do_messages(args):
+    conversations.fetch_conversations(include_messages=True)
+    print("Successfully fetched conversations and messages")
 
 
 def do_inbox(args):
@@ -45,6 +50,8 @@ subparser_login.set_defaults(func=do_login)
 subparser_login.add_argument("phone_number", type=str)
 subparser_fetch = subparsers.add_parser("fetch")
 subparser_fetch.set_defaults(func=do_fetch)
+subparser_fetch = subparsers.add_parser("messages")
+subparser_fetch.set_defaults(func=do_messages)
 subparser_inbox = subparsers.add_parser("inbox")
 subparser_inbox.set_defaults(func=do_inbox)
 subparser_notify = subparsers.add_parser("notify")

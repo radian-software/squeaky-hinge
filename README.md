@@ -55,6 +55,8 @@ The subcommands are as follows:
   to do this once.
 * `fetch`: Using the saved API credentials in `hinge_creds.json`,
   fetch your messages and store them in `conversations.json`.
+* `messages`: Same as `fetch`, but it gets all the messages instead of
+  just the most recent one.
 * `inbox`: Display your most recent messages from the data in
   `conversations.json`, using a human-readable format.
 * `notify`: Check the data in `conversations.json` and send
