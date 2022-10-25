@@ -12,7 +12,7 @@ def run_app(q):
         return flask.send_from_directory(".", "recaptcha.html")
 
     @app.route("/token", methods=["POST"])
-    def route_token():
+    def route_token():  # type: ignore
         q.put(flask.request.json["token"])  # type: ignore
         return "", 204
 
