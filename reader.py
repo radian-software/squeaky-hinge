@@ -56,6 +56,16 @@ def send_notifications(args):
                 f"Would send notifications about following {len(notifications)} message(s):"
             )
             print(json.dumps(notifications, indent=2))
+            new_last_notified_ts = max(n["timestamp"] for n in notifications)
+            if args.mark_read:
+                logging.info(
+                    f"Updating last notified timestamp to {new_last_notified_ts}"
+                )
+                with open("last_notified_timestamp.json", "w") as f:
+                    json.dump(
+                        {"last_notified_timestamp": new_last_notified_ts}, f, indent=2
+                    )
+                    f.write("\n")
 
         send_notifications_wrapped = func
 
@@ -64,12 +74,19 @@ def send_notifications(args):
         def func(notifications):
             send_notifications(notifications)
             new_last_notified_ts = max(n["timestamp"] for n in notifications)
-            logging.info(f"Updating last notified timestamp to {new_last_notified_ts}")
-            with open("last_notified_timestamp.json", "w") as f:
-                json.dump(
-                    {"last_notified_timestamp": new_last_notified_ts}, f, indent=2
+            if not args.keep_unread:
+                logging.info(
+                    f"Updating last notified timestamp to {new_last_notified_ts}"
                 )
-                f.write("\n")
+                with open("last_notified_timestamp.json", "w") as f:
+                    json.dump(
+                        {"last_notified_timestamp": new_last_notified_ts}, f, indent=2
+                    )
+                    f.write("\n")
+            else:
+                logging.info(
+                    f"Would update last notified timestamp to {new_last_notified_ts}, but skipping"
+                )
 
         send_notifications_wrapped = func
 

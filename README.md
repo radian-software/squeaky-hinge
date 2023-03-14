@@ -127,6 +127,13 @@ confetti, etc.
 Once you write your notification script, try `./squeaky_hinge.py
 notify -t` to test it on some sample data.
 
+For more persistent notifications, you can configure alternate
+behavior. Use `notify -k` to keep notifications as unread until they
+are explicitly marked read with `notify -nr`. If you run `notify -k`
+on a cron then you'll want to script your notify script to be
+idempotent, e.g. by having it check `ps aux` for existing on-screen
+notifications and exiting early instead of creating more.
+
 ## Set up automatic running and monitoring
 
 Of course, to use this script to get notifications, you would want to

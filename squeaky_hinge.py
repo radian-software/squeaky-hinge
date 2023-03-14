@@ -58,6 +58,8 @@ subparser_notify = subparsers.add_parser("notify")
 subparser_notify.set_defaults(func=do_notify)
 subparser_notify.add_argument("-n", "--dry-run", action="store_true")
 subparser_notify.add_argument("-t", "--test", action="store_true")
+subparser_notify.add_argument("-k", "--keep-unread", action="store_true")
+subparser_notify.add_argument("-r", "--mark-read", action="store_true")
 
 args = parser.parse_args()
 args.func(args)
