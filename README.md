@@ -18,236 +18,56 @@ up actual reliable notifications for messages.
 
 <!-- toc -->
 
-- [Usage](#usage)
-- [Configure notifications](#configure-notifications)
-- [Set up automatic running and monitoring](#set-up-automatic-running-and-monitoring)
-- [Troubleshooting](#troubleshooting)
-- [Implementation](#implementation)
-- [Future work](#future-work)
+- [Squeaky Hinge](#squeaky-hinge)
+  - [Disclaimer](#disclaimer)
+  - [Usage](#usage)
+    - [Requirements](#requirements)
+    - [Setup](#setup)
+    - [Run](#run)
 
 <!-- tocstop -->
 
+## Disclaimer
+
+
+This project is an UNOFFICIAL library for interacting with Hinge's internal APIs. It is NOT affiliated with, endorsed, or sponsored by Hinge.
+
+USE AT YOUR OWN RISK:
+
+- Account Safety: Using this library may violate Hinge's Terms of Service. This can lead to actions against your account, including but not limited to rate-limiting, suspension, or permanent banning.
+- API Instability: Internal APIs are subject to change without notice. This library may break at any time.
+- No Warranty: This software is provided "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+- No Liability: IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+-  By using this library, you acknowledge and agree that you understand these risks and take full responsibility for any consequences that may arise from its use.
+
 ## Usage
 
-This is a standard [Poetry](https://python-poetry.org/) project and
-can be installed as such or run from source. The entry point is
-`./squeaky_hinge.py`:
+### Requirements
+- Android SDK + Emulator (API 22-30,S except 28, with Google Play Services, tested with Pixel 5 API 30)
+  - **this process REQUIRES root, hence why API 22-30**. 
+- APK of the official app (package: co.hinge.app)
+- [Bun](https://bun.com/docs/installation)
 
-```
-% poetry run ./squeaky_hinge.py --help
-usage: squeaky_hinge.py [-h] {login,fetch,inbox,notify} ...
+### Setup
+1) Android emulator
+   - Create an AVD (e.g., Pixel 5, Android 11 or higher), best choice is Android Studio Virtual Device Manager
+   - Start it from command line or Virtual Device Manager:
+     `emulator -avd Pixel_5_API_30`
+   - Root the device, [follow these steps](https://github.com/shakalaca/MagiskOnEmulator). It is really easy, but I will gladly help you.
+2) Install the app
+   - `adb devices`
+   - `adb install hinge.apk`
+     (If already installed, ensure the package name is co.hinge.app)
 
-positional arguments:
-  {login,fetch,inbox,notify}
+3) Appium
+   - `bun i -g appium`
+   - `bunx appium driver install uiautomator2`
+   - `bunx appium`
+     (Leave running on default port 4723)
 
-options:
-  -h, --help            show this help message and exit
-```
+### Run
+`bun install && bun migrate`
+`bun cli.ts auth +15551234567`
+`bun cli.ts rec +90XXXXXXXXXX -g 2 -p 2 --lat 37.416866 --lon -122.0776`
 
-The subcommands are as follows:
-
-* `login`: Provide your phone number as a positional argument (e.g.
-  `+15555555555`). The CLI will run a local server and pop open your
-  browser for you to solve a reCAPTCHA which is then used to get
-  Google to send an SMS verification code to your phone number, which
-  you then have to type in at the command line. The long-lasting API
-  credentials are stored in `hinge_creds.json`. You should only have
-  to do this once.
-* `fetch`: Using the saved API credentials in `hinge_creds.json`,
-  fetch your messages and store them in `conversations.json`.
-* `messages`: Same as `fetch`, but it gets all the messages instead of
-  just the most recent one.
-* `inbox`: Display your most recent messages from the data in
-  `conversations.json`, using a human-readable format.
-* `notify`: Check the data in `conversations.json` and send
-  notifications if applicable. This requires configuration (see below)
-  to tell how notifications will be sent. If notifications are sent,
-  then this will save the timestamp in `last_notified_timestamp.json`
-  so that if you run again, you will not get more notifications unless
-  there are more recent messages. You can pass the `-n` option to just
-  say whether notifications would be sent (dry run), or the `-t`
-  option to invoke your notification config with test values to see if
-  it works.
-
-You should be able to run all of these subcommands except `notify`
-without further configuration. Here is an example session with
-placeholder values for personal information:
-
-```
-% poetry run ./squeaky_hinge.py login +15555555555
- * Serving Flask app 'recaptcha'
- * Debug mode: off
-SMS code from +15555555555: 123456
-Successfully (re-)authenticated
-
-% poetry run ./squeaky_hinge.py fetch
-Successfully fetched conversations
-
-% poetry run ./squeaky_hinge.py inbox
-
-[ Chat with NAME ] :: active 7 days ago
-Radon: The last message I wrote in this conversation
-
-% poetry run ./squeaky_hinge.py notify
-No notifications to send
-```
-
-## Configure notifications
-
-If you want to use the `notify` subcommand then you should add a file
-`squeaky_hinge_notifications.py` which should define a function called
-`send_notifications`. This function receives a single argument which
-is a list of notifications, like this:
-
-```json
-[
-  {
-    "sender": "Example Sender",
-    "text": "Example Message",
-    "timestamp": 1661107997231
-  },
-  {
-    "sender": "Another Example Sender",
-    "text": "Another Example Message",
-    "timestamp": 1661021597231
-  }
-]
-```
-
-If there are no notifications to be sent then your function is not
-called, so when it is called, you know there is at least one element
-in the list.
-
-From here you can do whatever you want, e.g. display popup using
-[terminal-notifier](https://github.com/julienXX/terminal-notifier) or
-[Zenity](https://help.gnome.org/users/zenity/stable/), send email
-notification via SMTP or SendGrid, send SMS via Twilio, shoot
-confetti, etc.
-
-Once you write your notification script, try `./squeaky_hinge.py
-notify -t` to test it on some sample data.
-
-For more persistent notifications, you can configure alternate
-behavior. Use `notify -k` to keep notifications as unread until they
-are explicitly marked read with `notify -nr`. If you run `notify -k`
-on a cron then you'll want to script your notify script to be
-idempotent, e.g. by having it check `ps aux` for existing on-screen
-notifications and exiting early instead of creating more.
-
-## Set up automatic running and monitoring
-
-Of course, to use this script to get notifications, you would want to
-run it repeatedly on an automatic schedule. I personally would
-recommend setting up a wrapper bash script, something like this:
-
-```bash
-#!/usr/bin/env bash
-
-set -euo pipefail
-
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-SCRIPT_PATH="${SCRIPT_DIR}/squeaky_hinge.bash"
-
-cd "${HOME}/path/to/squeaky_hinge"
-
-if [[ -z "${VIRTUAL_ENV:-}" ]]; then
-    exec poetry run "${SCRIPT_PATH}" "$@"
-fi
-
-if [[ -f "${SCRIPT_DIR}/squeaky_hinge.pid" ]] && (pstree -p "$(<"${SCRIPT_DIR}/squeaky_hinge.pid")" -a | grep squeaky_hinge); then
-    echo >&2 "aborting as concurrent process is already running"
-    exit 1
-else
-    echo "$$" >"${SCRIPT_DIR}/squeaky_hinge.pid"
-fi
-
-if ! diff -q "poetry.lock" "${VIRTUAL_ENV}/poetry.lock" &>/dev/null; then
-    poetry install
-    cp "poetry.lock" "${VIRTUAL_ENV}/poetry.lock"
-fi
-
-function hinge {
-    ./squeaky_hinge.py "$@"
-}
-
-hinge fetch
-hinge inbox
-hinge notify
-
-# setup free account at https://healthchecks.io/ to get notified when
-# your script starts failing due to bad auth or upstream api changes, etc
-curl https://hc-ping.com/some-url
-```
-
-Then you can execute this script in the context of your user account
-via crontab or systemd timer, to taste. Probably best to do it on your
-laptop / home wifi network, as companies often will block your account
-if you try to access API endpoints from IPs that are known to belong
-to AWS or other cloud providers.
-
-## Troubleshooting
-
-I unfortunately cannot provide support for tools like this since they
-will inevitably break due to reasons outside of my control. However,
-if you want to investigate an issue yourself, the best place to start
-would be to look at the `hinge.log` file that is populated with all
-API requests and responses, and see if you see anything interesting
-there.
-
-## Implementation
-
-This script is based on the Android app for Hinge, because they do not
-offer a web interface. To gather the data, I rooted my phone to
-install an [mitmproxy](https://mitmproxy.org/) CA in the system trust
-store and inspect the requests and responses made during login and
-messaging flows. Hinge has a relatively simple API, owing especially
-to the fact that they use third-party vendors for both authentication
-(Google Identity Platform) and messaging (SendBird). In short, the
-flow looks like this:
-
-* Generate a uuid to represent this installation of Hinge, post it to
-  `https://prod-api.hingeaws.net/identity/install`
-* Use the Firebase web API key that is hardcoded in the Hinge APK to
-  get a reCAPTCHA config from Google Identity Platform
-  ([docs](https://cloud.google.com/identity-platform/docs/reference/rest/v1/TopLevel/getRecaptchaParams))
-* Pop a browser for the user with that reCAPTCHA config to get a
-  reCAPTCHA token representing the solution, this is needed for
-  verification requests if you cannot provide the `X-Goog-Spatula`
-  header that comes out of proprietary Android code ([more on that
-  here](https://gist.github.com/Romern/e58e634e4d70b2be5b57d7abdb77f7ef))
-* Exchange user phone number and reCAPTCHA token in the
-  [sendVerificationCode
-  endpoint](https://cloud.google.com/identity-platform/docs/reference/rest/v1/accounts/sendVerificationCode)
-  for some session info
-* Get the user to type in the verification code they received to that
-  phone number
-* Pass session info and verification code to the `verifyPhoneNumber`
-  endpoint (which seems to not be publicly documented, only supported
-  in [some client
-  libraries](https://firebase.google.com/docs/auth/android/phone-auth))
-  and get a JWT representing the SMS verification
-* Exchange the SMS JWT for a Hinge API key at
-  `https://prod-api.hingeaws.net/auth/sms` - this, alongside the Hinge
-  install ID and SendBird user ID, is the primary persistent access
-  token that is saved after login
-* Exchange the Hinge API key for a SendBird access token at
-  `https://prod-api.hingeaws.net/message/authenticate`
-* Open a websocket connection to the Hinge-specific SendBird API
-  endpoint and receive a message containing a session key (more on
-  [access token vs session
-  key](https://sendbird.com/docs/chat/v3/platform-api/user/creating-users/create-a-user))
-* Use the [my\_group\_channels
-  endpoint](https://sendbird.com/docs/chat/v3/platform-api/user/managing-joined-group-channels/list-group-channels)
-  to get information about conversations in the messaging inbox
-
-## Future work
-
-This script only covers notifications about new messages so far, it
-should also ideally be extended to support notifications about new
-matches. I think this should be straightforward and will not require
-any novel techniques, but I haven't done it yet.
-
-Significant additional work could make build this into a full-featured
-open-source Hinge client. It's unlikely that I will take on a project
-like that because I don't need it and I'd prefer to avoid getting on
-the radar of more corporate lawyers than I need to.
+...

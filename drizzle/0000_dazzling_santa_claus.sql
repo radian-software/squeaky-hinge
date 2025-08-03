@@ -1,0 +1,30 @@
+CREATE TABLE `auth_snapshots` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`phone` text NOT NULL,
+	`created_at` text DEFAULT (datetime('now')) NOT NULL,
+	`updated_at` text NOT NULL,
+	`bearer_token` text,
+	`firebase_id_token` text,
+	`sendbird_token` text,
+	`push_token` text,
+	`install_id` text,
+	`firebase_uid` text,
+	`identity_id` text,
+	`session_id` text,
+	`hinge_token_expires` integer,
+	`last_version_code` integer,
+	`country` text,
+	`auth_state` text,
+	`last_signin_method` text,
+	`user_state` integer,
+	`is_banned` integer,
+	`header_authorization` text,
+	`header_x_build_number` text,
+	`header_x_app_version` text,
+	`header_x_install_id` text,
+	`header_x_session_id` text,
+	`permissions_json` text,
+	`raw_selected_json` text
+);
+--> statement-breakpoint
+CREATE UNIQUE INDEX `auth_snapshots_phone_unique` ON `auth_snapshots` (`phone`);

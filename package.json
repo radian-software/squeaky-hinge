@@ -1,0 +1,23 @@
+{
+  "name": "squeaky-hinge",
+  "module": "cli.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "migrate": "bun run ./src/db/migrate.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "commander": "^14.0.0",
+    "drizzle-kit": "^0.31.4",
+    "drizzle-orm": "^0.44.4",
+    "fast-xml-parser": "^5.2.5",
+    "libphonenumber-js": "^1.12.10",
+    "webdriverio": "^9.18.4"
+  }
+}
