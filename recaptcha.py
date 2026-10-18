@@ -1,4 +1,5 @@
-import multiprocessing
+import queue
+import threading
 import webbrowser
 
 import flask
@@ -24,15 +25,13 @@ def run_app(q):
 
 
 def get_token(site_key):
-    q = multiprocessing.Queue(maxsize=1)
+    q = queue.Queue(maxsize=1)
 
-    server = multiprocessing.Process(target=lambda: run_app(q), daemon=True)
+    # The server runs on a daemon thread rather than in a subprocess because
+    # Windows spawns subprocesses instead of forking them, and the closure we
+    # would need to pass as the subprocess target is not picklable.
+    server = threading.Thread(target=lambda: run_app(q), daemon=True)
     server.start()
     webbrowser.open(f"http://localhost:8888#{site_key}")
 
-    token = q.get()
-
-    server.terminate()
-    server.join()
-
-    return token
+    return q.get()
